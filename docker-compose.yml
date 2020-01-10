@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  app: 
+    build: ./app
+    ports:
+    - "127.0.0.1:8080:8080"
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:v2.15.1
+    volumes:
+    - "./volumes/config/prometheus:/config:ro"
+    - "./volumes/storage/prometheus:/data"
+    command:
+    - "--config.file"
+    - /config/prometheus.yaml
+    - --storage.tsdb.path
+    - /data/tsdb
+    ports:
+    - "127.0.0.1:9090:9090"
+    links:
+    - app
+    restart: always
+
+  grafana:
+    image: grafana/grafana:6.5.2
+    volumes:
+    - "./volumes/config/grafana:/etc/grafana:ro"
+    - "./volumes/storage/grafana:/var/lib/grafana"
+    - "./volumes/storage/grafana/logs:/var/log/grafana"
+    ports:
+    - "127.0.0.1:3000:3000"  
+    links: 
+    - prometheus
+    restart: always
